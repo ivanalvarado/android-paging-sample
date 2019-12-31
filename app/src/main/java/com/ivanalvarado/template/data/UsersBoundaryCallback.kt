@@ -7,9 +7,14 @@ import androidx.paging.PagedList
 import com.ivanalvarado.template.database.cache.UsersLocalCache
 import com.ivanalvarado.template.database.entity.UserEntity
 import com.ivanalvarado.template.network.models.NetworkError
+import com.ivanalvarado.template.network.models.UsersResponse
 import com.ivanalvarado.template.network.services.StackOverflowService
+import com.ivanalvarado.template.util.logDebug
 import io.reactivex.rxkotlin.subscribeBy
 import io.reactivex.schedulers.Schedulers
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
 
 class UsersBoundaryCallback(
     private val service: StackOverflowService,
@@ -30,27 +35,25 @@ class UsersBoundaryCallback(
     }
 
     private fun requestAndSaveData() {
-        service.fetchUsers()
-            .subscribeOn(Schedulers.io())
-            .subscribeBy(
-                onNext = { response ->
-                    Log.d("BoundaryCallback", "OnNext")
-                    if (response.isSuccessful) {
-                        val userEntities = response.body()?.users?.map { user ->
-                            user.toUserEntity()
-                        }
+        logDebug("fetchUsers")
+        service.fetchUsers().enqueue(object: Callback<UsersResponse>{
+            override fun onFailure(call: Call<UsersResponse>, t: Throwable) {
+                _networkErrors.postValue(NetworkError(500, t.localizedMessage))
+            }
 
-                        userEntities?.let {
-                            cache.insert(userEntities)
-                        }
-                    } else {
-                        _networkErrors.postValue(NetworkError(response.code(), response.message()))
+            override fun onResponse(call: Call<UsersResponse>, response: Response<UsersResponse>) {
+                if (response.isSuccessful) {
+                    val userEntities = response.body()?.users?.map { user ->
+                        user.toUserEntity()
                     }
-                },
-                onError = { t ->
-                    Log.d("BoundaryCallback", "OnError")
-                    _networkErrors.postValue(NetworkError(500, t.localizedMessage))
+
+                    userEntities?.let {
+                        cache.insert(userEntities)
+                    }
+                } else {
+                    _networkErrors.postValue(NetworkError(response.code(), response.message()))
                 }
-            ).dispose()
+            }
+        })
     }
 }
