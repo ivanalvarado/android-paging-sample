@@ -48,7 +48,9 @@ class UsersBoundaryCallback(
                     }
 
                     userEntities?.let {
-                        cache.insert(userEntities)
+                        cache.insert(userEntities) {
+
+                        }
                     }
                 } else {
                     _networkErrors.postValue(NetworkError(response.code(), response.message()))

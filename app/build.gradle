@@ -40,6 +40,7 @@ ext {
     daggerAssistedInjectVersion = '0.5.0'
     epoxyVersion = '3.8.0'
     espressoVersion = '3.0.2'
+    glideVersion = '4.11.0'
     jUnitVersion = '4.12'
     lifecycleVersion = '2.1.0'
     lottieVersion = '3.2.2'
@@ -92,6 +93,11 @@ dependencies {
     // Epoxy - https://github.com/airbnb/epoxy
     implementation "com.airbnb.android:epoxy:$epoxyVersion"
     kapt "com.airbnb.android:epoxy-processor:$epoxyVersion"
+    implementation 'com.airbnb.android:epoxy-paging:2.18.0'
+
+    // Glide - https://github.com/bumptech/glide
+    implementation "com.github.bumptech.glide:glide:$glideVersion"
+    annotationProcessor "com.github.bumptech.glide:compiler:$glideVersion"
 
     // Lottie - https://airbnb.io/lottie/#/README
     implementation "com.airbnb.android:lottie:$lottieVersion"
