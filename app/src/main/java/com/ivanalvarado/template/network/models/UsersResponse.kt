@@ -30,7 +30,7 @@ data class User(
     @SerializedName("reputation_change_year") val reputation_change_year: Int,
     @SerializedName("user_id") val user_id: Int,
     @SerializedName("user_type") val user_type: String,
-    @SerializedName("website_url") val website_url: String
+    @SerializedName("website_url") val website_url: String?
 ) {
     fun toUserEntity(): UserEntity {
         return UserEntity(

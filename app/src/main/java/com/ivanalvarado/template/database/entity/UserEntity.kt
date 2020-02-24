@@ -12,6 +12,6 @@ data class UserEntity(
     @ColumnInfo(name = "user_name") val userName: String,
     @ColumnInfo(name = "reputation") val reputation: Int,
     @ColumnInfo(name = "image_url") val imageUrl: String,
-    @ColumnInfo(name = "website_url") val websiteUrl: String,
+    @ColumnInfo(name = "website_url") val websiteUrl: String?,
     @ColumnInfo(name = "last_access_date") val lastAccessDate: Int
 )

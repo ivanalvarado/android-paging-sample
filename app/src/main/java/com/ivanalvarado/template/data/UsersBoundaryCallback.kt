@@ -1,6 +1,5 @@
 package com.ivanalvarado.template.data
 
-import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.paging.PagedList
@@ -10,8 +9,6 @@ import com.ivanalvarado.template.network.models.NetworkError
 import com.ivanalvarado.template.network.models.UsersResponse
 import com.ivanalvarado.template.network.services.StackOverflowService
 import com.ivanalvarado.template.util.logDebug
-import io.reactivex.rxkotlin.subscribeBy
-import io.reactivex.schedulers.Schedulers
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -20,6 +17,9 @@ class UsersBoundaryCallback(
     private val service: StackOverflowService,
     private val cache: UsersLocalCache
 ) : PagedList.BoundaryCallback<UserEntity>() {
+
+    private var lastRequestedPage = 1
+    private var isRequestInProgress = false
 
     private val _networkErrors = MutableLiveData<NetworkError>()
 
@@ -35,8 +35,11 @@ class UsersBoundaryCallback(
     }
 
     private fun requestAndSaveData() {
+        if (isRequestInProgress) return
+
         logDebug("fetchUsers")
-        service.fetchUsers().enqueue(object: Callback<UsersResponse>{
+        isRequestInProgress = true
+        service.fetchUsers(lastRequestedPage).enqueue(object: Callback<UsersResponse>{
             override fun onFailure(call: Call<UsersResponse>, t: Throwable) {
                 _networkErrors.postValue(NetworkError(500, t.localizedMessage))
             }
@@ -49,11 +52,13 @@ class UsersBoundaryCallback(
 
                     userEntities?.let {
                         cache.insert(userEntities) {
-
+                            lastRequestedPage++
+                            isRequestInProgress = false
                         }
                     }
                 } else {
                     _networkErrors.postValue(NetworkError(response.code(), response.message()))
+                    isRequestInProgress = false
                 }
             }
         })
